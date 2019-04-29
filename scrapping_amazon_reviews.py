@@ -126,7 +126,7 @@ def get_all_reviews(asin):
 
 
 def core():
-    asin_list = ['B000LL0R8I', 'B07DJ16CD6',  'B00JD242MS', 'B000LL0R92', 'B000LKXRNQ']
+    asin_list = ['B000LL0R8I','B00JD242MS']
     for asin in asin_list:
         print(f"IN PROCESS FOR: {asin}")
         temp = get_all_reviews(asin)
