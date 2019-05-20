@@ -56,7 +56,10 @@ def get_header(asin):
 
 def get_all_reviews(asin):
     review_total_pages = []
-    product_price, product_name, number_reviews, ratings_dict, stop_loop_for = get_header(asin)
+	try:
+		product_price, product_name, number_reviews, ratings_dict, stop_loop_for = get_header(asin)
+	except ValueError as e:
+		return {"error": e}
     for page_number in range(1, stop_loop_for):
         print(page_number)
         try:
