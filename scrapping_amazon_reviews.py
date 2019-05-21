@@ -1,85 +1,80 @@
-from lxml import html
-from json import dump, loads
-from requests import get
-import json
-from re import sub
-from dateutil import parser as dateparser_to_html
-from time import sleep
 import urllib3
-from ast import literal_eval
-
 import random
+from lxml import html
+from json import loads, dump
+from requests import get
+from dateutil import parser as dateparser_to_html
+
 
 
 def get_random_user_agent():
     user_agent_list = ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36'
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36'
-                        'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
-                        'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36'
-    ]
+                       'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36'
+                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36'
+                       'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
+                       'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36']
     return random.choice(user_agent_list)
+
+
 def get_header(asin):
     try:
         ratings_dict = {}
         amazon_url = 'https://www.amazon.com/product-reviews/' + asin + '/ref=cm_cr_arp_d_paging_btm_next_1?pageNumber=1'
         urllib3.disable_warnings()
         headers = {'User-Agent': get_random_user_agent()}
-        print(headers)
-        response2 = get(amazon_url, headers=headers, verify=False, timeout=30)
-        # Removing the null bytes from the response.
-        cleaned_response = response2.text.replace('\x00', '')
+        response = get(amazon_url, headers=headers, verify=False, timeout=30)
+        cleaned_response = response.text.replace('\x00', '')
         parser_to_html = html.fromstring(cleaned_response)
-        number_reviews = ''.join(parser_to_html.xpath('.//span[@data-hook="total-review-count"]//text()')).replace(',', '')
-        product_price = ''.join(parser_to_html.xpath('.//span[contains(@class,"a-color-price arp-price")]//text()')).strip()
-        product_name = ''.join(parser_to_html.xpath('.//a[@data-hook="product-link"]//text()')).strip()
-        total_ratings = parser_to_html.xpath('//table[@id="histogramTable"]//tr')
-        for ratings in total_ratings:
+
+        data = {'number_reviews': ''.join(parser_to_html.xpath('.//span[@data-hook="total-review-count"]//text()')).replace(',', ''),
+                'product_price': ''.join(parser_to_html.xpath('.//span[contains(@class,"a-color-price arp-price")]//text()')).strip(),
+                'product_name': ''.join(parser_to_html.xpath('.//a[@data-hook="product-link"]//text()')).strip(),
+                'total_ratings': parser_to_html.xpath('//table[@id="histogramTable"]//tr')}
+
+        for ratings in data['total_ratings']:
             extracted_rating = ratings.xpath('./td//a//text()')
             if extracted_rating:
                 rating_key = extracted_rating[0]
-                raw_raing_value = extracted_rating[1]
-                rating_value = raw_raing_value
+                rating_value = extracted_rating[1]
                 if rating_key:
                     ratings_dict.update({rating_key: rating_value})
-        number_page_reviews = int(int(number_reviews) / 10)
+
+        number_page_reviews = int(int(data['number_reviews']) / 10)
+
         if number_page_reviews % 2 == 0:
             number_page_reviews += 1
         else:
             number_page_reviews += 2
-        return product_price, product_name, number_reviews, ratings_dict, number_page_reviews
+
+        return data['product_price'], data['product_name'],\
+               data['number_reviews'], ratings_dict, number_page_reviews, headers
     except Exception as e:
         return {"url": amazon_url, "error": e}
 
 
 def get_all_reviews(asin):
     review_total_pages = []
-    product_price, product_name, number_reviews, ratings_dict, stop_loop_for = get_header(asin)
-    user_agent = get_random_user_agent()
-    print(user_agent)
+    product_price, product_name, number_reviews, ratings_dict, stop_loop_for, headers = get_header(asin)          
     for page_number in range(1, stop_loop_for):
         print(f"Reviews of Page #: {page_number}")
         try:
             amazon_url = 'https://www.amazon.com/product-reviews/' + asin + '/ref=cm_cr_arp_d_paging_btm_next_' \
                          + str(page_number) + '?pageNumber=' + str(page_number)
             urllib3.disable_warnings()
-            headers = {'User-Agent': user_agent}
-            response2 = get(amazon_url, headers=headers, verify=False, timeout=30)
-
-            # Removing the null bytes from the response.
-            cleaned_response = response2.text.replace('\x00', '')
+            response = get(amazon_url, headers=headers, verify=False, timeout=30)
+            cleaned_response = response.text.replace('\x00', '')
             parser_to_html = html.fromstring(cleaned_response)
         except Exception as e:
             return {"url": amazon_url, "error": e}
@@ -126,22 +121,27 @@ def get_all_reviews(asin):
                 'review_author': author
             }
             review_total_pages.append(review_dict)
-    data = {
+    result = {
         'product_name': product_name,
         'product_price': product_price,
         'number_reviews': number_reviews,
         'ratings': ratings_dict,
         'reviews': review_total_pages,
     }
-    return data
+    return result
 
-if __name__ == '__main__':
+def core():
     try:
-        response_list = []
-        asin_list = ["B00JD242MS"]
+        asin_list = ['B000LL0R8I','B00JD242MS']
         for asin in asin_list:
+            print(f"IN PROCESS FOR: {asin}")
             temp = get_all_reviews(asin)
-            response_list.append(temp)
-        print(response_list)
+            f = open(asin + '.json', 'w')
+            dump(temp, f, indent=4)
+            f.close()
     except Exception as e:
         print("Asin error")
+
+if __name__ == '__main__':
+    core()
+
