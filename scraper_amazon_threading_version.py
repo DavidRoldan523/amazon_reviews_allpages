@@ -156,7 +156,6 @@ def get_all_reviews(asin):
     }
     return response
 
-
 def core():
     try:
         data = {'asin_list': ['B00JD242MS','B000LL0R8I'],
