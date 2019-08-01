@@ -41,21 +41,35 @@ def get_random_user_agent():
                        'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36']
     return random.choice(user_agent_list)
 
+## TO DO - CONVERT THE FUNCTION INTO A SMARTER WAY TO MAKE IT CLEANER
+def getParsedHTML(url,asin):
+    amazon_url = url + asin
+
+
+
 
 def get_header(asin):
     try:
         global headers
         ratings_dict = {}
         amazon_url = 'https://www.amazon.com/product-reviews/' + asin + '/ref=cm_cr_arp_d_paging_btm_next_1?pageNumber=1'
+        amazon_url_main = 'https://www.amazon.com/dp/' + asin
         headers = {'User-Agent': get_random_user_agent()}
         urllib3.disable_warnings()
         response = get(amazon_url, headers=headers, verify=False, timeout=30)
+        response_main = get(amazon_url_main, headers=headers, verify=False, timeout=30)
         cleaned_response = response.text.replace('\x00', '')
+        cleaned_response_main = response_main.text.replace('\x00', '')
+        #print(cleaned_response_main)
         parser_to_html = html.fromstring(cleaned_response)
+        parser_to_html_main = html.fromstring(cleaned_response_main)
+        #print(parser_to_html_main.xpath('//span[@id="productTitle"]//text()')).strip()
 
         data = {'number_reviews': ''.join(parser_to_html.xpath('.//span[@data-hook="total-review-count"]//text()')).replace(',', ''),
                 'product_price': ''.join(parser_to_html.xpath('.//span[contains(@class,"a-color-price arp-price")]//text()')).strip(),
-                'product_name': ''.join(parser_to_html.xpath('.//a[@data-hook="product-link"]//text()')).strip(),
+                #'product_name': ''.join(parser_to_html.xpath('.//span[@id="productTitle"]//text()')).strip(),
+                'product_name': ''.join(parser_to_html_main.xpath('//span[@id="productTitle"]//text()')).strip(),
+                'product_desc': ''.join(parser_to_html_main.xpath('.//div[@id="productDescription"]//text()')).strip(),
                 'total_ratings': parser_to_html.xpath('//table[@id="histogramTable"]//tr')}
 
         for ratings in data['total_ratings']:
@@ -68,16 +82,16 @@ def get_header(asin):
 
         number_page_reviews = int(int(data['number_reviews']) / 10)
 
+
         if number_page_reviews % 2 == 0:
             number_page_reviews += 1
         else:
             number_page_reviews += 2
 
         return data['product_price'], data['product_name'],\
-               data['number_reviews'], ratings_dict, number_page_reviews, headers
+               data['product_desc'], data['number_reviews'], ratings_dict, number_page_reviews, headers
     except Exception as e:
         return {"url": amazon_url, "error": e}
-
 
 
 def download_site(url):
@@ -134,7 +148,7 @@ def download_site(url):
 def get_all_reviews(asin):
     global review_total_pages
     url_list = []
-    product_price, product_name, number_reviews, ratings_dict, stop_loop_for, headers = get_header(asin)
+    product_price, product_name, product_desc , number_reviews, ratings_dict, stop_loop_for, headers = get_header(asin)
     for page_number in range(1, stop_loop_for):
         amazon_url = 'https://www.amazon.com/product-reviews/' + \
                      asin + \
@@ -149,6 +163,7 @@ def get_all_reviews(asin):
 
     response = {
         'product_name': product_name,
+        'product_desc': product_desc,
         'product_price': product_price,
         'number_reviews': number_reviews,
         'ratings': ratings_dict,
@@ -158,8 +173,8 @@ def get_all_reviews(asin):
 
 def core():
     try:
-        data = {'asin_list': ['B00JD242MS','B000LL0R8I'],
-                'format': 'csv'}
+        data = {'asin_list': ['B01IO951EI','B07L6NTY5V'],
+                'format': 'json'}
         if data['format'] == 'csv':
             for asin in data['asin_list']:
                 print(f"IN PROCESS FOR: {asin}")
