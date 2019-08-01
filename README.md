@@ -2,6 +2,7 @@
 
 **Script to scrape all reviews on all Amazon pages**
 **Threading version**
+**Added Support to Get Title and Description Properly**
 
 **Python 3** 
 _________________________________________________________________________________________________________________________________________________________________________________
